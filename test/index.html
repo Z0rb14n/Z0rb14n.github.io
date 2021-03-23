@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<head>
+  <title>Bad JS in website</title>
+  <link rel="shortcut icon" href="images/cat.svg" type="image/svg+xml">  
+</head>
+    <body onload="main()">
+    <div id="can-div">
+        <canvas id="main-canvas" width="540" height="480" onmousemove="onMouseMove(event)" onmouseout="mouseout(event)" onmouseup="onMouseUp(event)" onmousedown="onMouseDown(event)" onclick="mouseClicked(event)"
+                style="border:0px solid #c3c3c3;">
+		Your browser does not support the canvas element.
+        </canvas>
+    </div>
+        <script>
+            //var isMousePressed = false;
+            var mouseX = 0;
+            var mouseY = 0;
+            var mousePressed = false;
+            var fRate = 60;
+            const canvas = document.getElementById("main-canvas");
+            const ctx = canvas.getContext('2d');
+            var frameCount = 0;
+            var noBackground = false;
+            var lmaokai = 0;
+            var Background = [255, 255, 255];
+            var BackgroundStyle = "#" + componentToHex(Background[0]) + componentToHex(Background[1]) + componentToHex(Background[2]);
+            var delays = setInterval(draw, 50 / 3);
+            var to;
+            var from;
+            function main() {
+                setup();
+            }
+            function setup() {
+                delays = setInterval(draw, 50 / 3);
+                frameRate(60);
+                size(540, 480); // isn't working
+                background(0, 125, 255);
+                //Add stuff here
+            }
+            function basicDrawFunctions() {
+                drawBackground();
+                frameCount++;
+            }
+            function draw() {
+                //console.time("LOL");
+                //to = Date.now();
+                if (canvas.getContext) {
+                    basicDrawFunctions();
+                    style(0, 255, 255);
+                    ellipse(mouseX, mouseY, 30, 30);
+                    drawRect(lmaokai, 10, 40, 40);
+                    ellipse(400, 200, 100, 100);
+                    line(400, 400, 200, 400);
+                    lmaokai += 1;
+                    //from = Date.now();
+                    //console.timeEnd("LOL")
+                    isMousePressed = false;
+                }
+            }
+            function style(R, G, B) {
+                if (typeof G == "undefined") {
+                    console.log("style(R,G,B): Undefined green argument.");
+                    if (typeof B == "undefined") {
+                        console.log("style(R,G,B): Undefined blue argument: DEFAULTING TO 1 ARG DEFINITION");
+                        var temp = new Array(R, R, R);
+                        ctx.fillStyle = "#" + componentToHex(temp[0]) + componentToHex(temp[1]) + componentToHex(temp[2]);
+                    } else {
+                        console.log("style(R,G,B): Invalid arguments");
+                    }
+                } else {
+                    if (typeof B !== "undefined") {
+                        var temp = new Array(R, G, B);
+                        ctx.fillStyle = "#" + componentToHex(temp[0]) + componentToHex(temp[1]) + componentToHex(temp[2]);
+                    } else {
+                        console.log("style(R,G,B): Invalid arguments");
+                    }
+                }
+            }
+            function drawBackground() {
+                if (!noBackground) {
+                    if (canvas.getContext) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = "#" + componentToHex(Background[0]) + componentToHex(Background[1]) + componentToHex(Background[2]);
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+                }
+            }
+            function background(R, G, B) {
+                if (typeof G == "undefined") {
+                    console.log("Background(R,G,B): Undefined green argument.");
+                    if (typeof B == "undefined") {
+                        console.log("Background(R,G,B): Undefined blue argument: DEFAULTING TO 1 ARG DEFINITION");
+                        Background = new Array(R, R, R);
+                        BackgroundStyle = "#" + componentToHex(Background[0]) + componentToHex(Background[1]) + componentToHex(Background[2]);
+                    } else {
+                        console.log("Background(R,G,B): Invalid arguments");
+                    }
+                } else {
+                    if (typeof B !== "undefined") {
+                        Background = new Array(R, G, B);
+                        BackgroundStyle = "#" + componentToHex(Background[0]) + componentToHex(Background[1]) + componentToHex(Background[2]);
+                    } else {
+                        console.log("Background(R,G,B): Invalid arguments");
+                    }
+                }
+            }
+            function frameRate(rate) {
+                fRate = 60;
+                delays = setInterval(draw, 1000 / rate);
+            }
+            function size(width, height) {
+                document.getElementById("canvas").style.width = "" + width + "px";
+                document.getElementById("canvas").style.height = "" + height + "px";
+            }
+            function noBackground() {
+                noBackground = true;
+            }
+            function enableBackground() {
+                noBackground = false;
+            }
+            function noLoop() {
+                clearInterval(delays);
+            }
+
+            class vector {
+                constructor(x1, y1) {
+                    this.x = x1;
+                    this.y = y1;
+                    this.prototype.getMag = function () {
+                        return Math.sqrt(this.x * this.x + this.y*this.y);
+                    }
+                    this.prototype.getMagSq = function () {
+                        return this.x * this.x + this.y*this.y;
+                    }
+                    this.prototype.heading = function () {
+                        var hyp = this.prototype.getMag();
+                        var sin = Math.sin(y / hyp);
+                        var cos = Math.cos(x / hyp);
+                        var tan = Math.tan(x / hyp);
+                        if (cos >= 0 && sin >= 0 && tan >= 0) {
+                            return Math.asin(y / hyp);
+                        } else if (sin >= 0) {
+                            return Math.asin(x / hyp);
+                        } else if (tan >= 0) {
+                            return Math.asin(y / hyp);
+                        } else if (cos >= 0) {
+                            return (Math.PI * (3 / 2)) + Math.acos(x / hyp);
+                        }
+                    }
+                    this.prototype.random2D = function () {
+                        this.x = Math.random();
+                        this.y = Math.random();
+                    }
+                }
+            }
+            function drawRect(x, y, width, length) {
+                ctx.fillRect(x, y, width, length);
+            }
+            function drawCircle(x, y, radius) {
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2, true); // Outer circle
+                ctx.fill();
+            }
+            function line(x1, y1, x2, y2) {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            //cx = center x, cy = center y, rx = radius x, ry = radius y
+            function drawEllipse(cx, cy, rx, ry) {
+                ctx.save(); // save state
+                ctx.beginPath();
+
+                ctx.translate(cx - rx, cy - ry);
+                ctx.scale(rx, ry);
+                ctx.arc(1, 1, 1, 0, 2 * Math.PI, false);
+
+                ctx.restore(); // restore to original state
+                ctx.stroke();
+            }
+            function getMousePosition(event) {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = event.clientX - rect.left;
+                mouseY = event.clientY - rect.top;
+            }
+            //cx = center x, cy = center y, rx = radius x, ry = radius y
+            function ellipse(cx, cy, rx, ry) {
+                ctx.save(); // save state
+                ctx.beginPath();
+
+                ctx.translate(cx - rx, cy - ry);
+                ctx.scale(rx, ry);
+                ctx.arc(1, 1, 1, 0, 2 * Math.PI, false);
+                ctx.fill();
+                ctx.restore(); // restore to original state
+                ctx.stroke();
+            }
+            function componentToHex(c) {
+                var hex = c.toString(16);
+                return hex.length == 1 ? "0" + hex : hex;
+            }
+            function mouseClicked(event) {
+            }
+            function mousePressed(event) {
+            }
+            function onMouseMove(event) {
+                getMousePosition(event);
+            }
+            function onMouseDown(event) {
+                mousePressed = true;
+            }
+            function onMouseUp(event) {
+                mousePressed = false;
+            }
+            function mouseout(event) {
+            }
+
+        </script>
+</body>
