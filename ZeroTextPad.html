@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!-- Based on tchouky's Zalgo Text Generator-->
+<html>
+	<head>
+		<style type="text/css">
+			body {
+				font-family: Arial, Helvetica, sans-serif;
+			}
+		</style>
+		<title>Zero Width Space Pad</title>
+		<script type="text/javascript">
+			var maxLen = 2000;
+			var lenInputId = "max_length_input";
+			var mainTextAreaId = "input_txt";
+			var outputContainerId = "output_txt";
+			var leftopt = "opt_left";
+			var rightopt = "opt_right";
+			var centeropt = "opt_center";
+			function generate() {
+				maxLen = document.getElementById(lenInputId).value;
+				var p = document.getElementById(mainTextAreaId);
+				var txt = p.value;
+				var newtxt = txt;
+				if (document.getElementById(rightopt).checked) {
+					while (newtxt.length < maxLen) {
+						newtxt += '\u200B';
+					}
+				}
+				if (document.getElementById(leftopt).checked) {
+					var desiredPad = maxLen - txt.length;
+					newtxt = "";
+					for (var i = 0; i < desiredPad; i++) {
+						newtxt += '\u200B';
+					}
+					newtxt += txt;
+				}
+				if (document.getElementById(centeropt).checked) {
+					var desiredPad = maxLen - txt.length;
+					newtxt = txt.slice(0,txt.length/2);
+					for (var i = 0; i < desiredPad; i++) {
+						newtxt += '\u200B';
+					}
+					newtxt += txt.slice(txt.length/2);
+				}
+				var container = document.getElementById(outputContainerId);
+				container.value = newtxt;
+			}
+		</script>
+	<body>
+		<h1>Zero width space text padder</h1>
+		<p></p>
+		<table>
+			<tbody>
+				<tr>
+					<td style="BORDER-RIGHT: black 2px solid; BORDER-TOP: black 2px solid; BORDER-LEFT: black 2px solid; BORDER-BOTTOM: black 2px solid" width="550">
+						<textarea readonly id="output_txt" style="FONT-FAMILY: Helvetica" rows="19" cols="71"></textarea>
+					</td>
+						
+					</textarea>
+					<td style="BORDER-RIGHT: black 2px solid; BORDER-TOP: black 2px solid; BORDER-LEFT: black 2px solid; BORDER-BOTTOM: black 2px solid" width="450">
+						<textarea id="input_txt" rows="13" style="FONT-FAMILY: Helvetica" cols="80"></textarea>
+						<form>
+							<input onclick="generate();" type="button" value="Pad" style="width: 100px">
+							<br>
+							<table width="100%">
+								<tbody>
+									<tr>
+										<td width="50%">
+											Length:<br>
+											<input id="max_length_input" type="number" value="2000" min="0" step="1"
+													onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+													required/>
+										</td>
+										<td width="50%">
+											Pad side: <br>
+											<input id="opt_left" type="radio" name="optval">Left<br>
+											<input id="opt_center" type="radio" name="optval">Center<br>
+											<input id="opt_right" type="radio" name="optval" checked="">Right<br>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</body>
+</html>
