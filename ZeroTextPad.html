@@ -14,78 +14,99 @@
     </style>
     <title>Zero Width Space Pad</title>
     <script type="text/javascript">
-        let maxLen = 2000;
-        let lenInputId = "max_length_input";
-        let mainTextAreaId = "input_txt";
-        let outputContainerId = "output_txt";
-        let leftopt = "opt_left";
-        let rightopt = "opt_right";
-        let centeropt = "opt_center";
-        function generate() {
-            maxLen = document.getElementById(lenInputId).value;
-            let mainTextArea = document.getElementById(mainTextAreaId);
-            let txt = mainTextArea.value;
-            let newtxt = txt;
-            let desiredPad = maxLen - txt.length;
-            if (document.getElementById(rightopt).checked) {
-                for (let i = 0; i < desiredPad; i++) {
-                    newtxt += '\u200B';
+            let maxLen = 2000;
+            let lenInputId = "max_length_input";
+            let mainTextAreaId = "input_txt";
+            let outputContainerId = "output_txt";
+            let leftopt = "opt_left";
+            let rightopt = "opt_right";
+            let centeropt = "opt_center";
+            let listStringPowers = ["\u200B"];
+            function generatePadding(len) {
+                if (len === parseInt(len, 10)) {
+                    let currLen = 0;
+                    let padding = "";
+                    while (currLen != len) {
+                        if (currLen > len) throw "This shouldn't happen.";
+                        let powlog = Math.floor(Math.log2(len-currLen));
+                        while (listStringPowers.length <= powlog) {
+                            let last = listStringPowers[listStringPowers.length - 1];
+                            listStringPowers.push(last + last);
+                        }
+                        padding = padding + listStringPowers[powlog];
+                        currLen = padding.length;
+                    }
+                    return padding;
+                } else {
+                    console.error("generatePadding receieved invalid parameter: " + len);
+                    return "";
                 }
             }
-            if (document.getElementById(leftopt).checked) {
-                newtxt = "";
-                for (let i = 0; i < desiredPad; i++) {
-                    newtxt += '\u200B';
-                }
-                newtxt += txt;
+
+            function onload() {
+                let p = document.getElementById(mainTextAreaId);
+                p.addEventListener('input', function() {
+                    console.log("...");
+                    generate();
+                    console.log("???");
+                });
             }
-            if (document.getElementById(centeropt).checked) {
-                newtxt = txt.slice(0,txt.length/2);
-                for (let i = 0; i < desiredPad; i++) {
-                    newtxt += '\u200B';
+
+            function generate() {
+                maxLen = document.getElementById(lenInputId).value;
+                let mainTextArea = document.getElementById(mainTextAreaId);
+                let txt = mainTextArea.value;
+                let newtxt = "";
+                console.log(txt);
+                if (document.getElementById(rightopt).checked) {
+                    newtxt = txt + generatePadding(maxLen - txt.length);
                 }
-                newtxt += txt.slice(txt.length/2);
+                if (document.getElementById(leftopt).checked) {
+                    newtxt = generatePadding(maxLen - txt.length) + txt;
+                }
+                if (document.getElementById(centeropt).checked) {
+                    newtxt = txt.slice(0,txt.length/2) + generatePadding(maxLen - txt.length) + txt.slice(txt.length/2);
+                }
+                let container = document.getElementById(outputContainerId);
+                container.value = newtxt;
             }
-            let container = document.getElementById(outputContainerId);
-            container.value = newtxt;
-        }
-    </script>
-</head>
-<body>
-<h1>Zero width space text padder</h1>
-<p></p>
-<table>
-    <tbody>
-    <tr>
-        <td style="BORDER-RIGHT: black 2px solid; BORDER-TOP: black 2px solid; BORDER-LEFT: black 2px solid; BORDER-BOTTOM: black 2px solid" width="550">
-            <textarea readonly id="output_txt" style="FONT-FAMILY: Helvetica,sans-serif" rows="19" cols="71"></textarea>
-        </td>
-        <td style="BORDER-RIGHT: black 2px solid; BORDER-TOP: black 2px solid; BORDER-LEFT: black 2px solid; BORDER-BOTTOM: black 2px solid" width="450">
-            <textarea id="input_txt" rows="13" style="FONT-FAMILY: Helvetica,sans-serif" cols="80"></textarea>
-            <form>
-                <input onclick="generate();" type="button" value="Pad" style="width: 100px">
-                <br>
-                <table width="100%">
-                    <tbody>
-                    <tr>
-                        <td width="50%">
-                            <label for="max_length_input">Length:</label><br><input id="max_length_input" type="number" value="2000" min="0" step="1"
-                                                                         onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                                                         required/>
-                        </td>
-                        <td width="50%">
-                            Pad side: <br>
-                            <input id="opt_left" type="radio" name="optval"><label for="opt_left">Left</label><br>
-                            <input id="opt_center" type="radio" name="optval"><label for="opt_center">Center</label><br>
-                            <input id="opt_right" type="radio" name="optval" checked=""><label for="opt_right">Right</label><br>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-</body>
+        </script>
+    <body onload="onload();">
+        <h1>Zero width space text padder</h1>
+        <p></p>
+        <table>
+            <tbody>
+                <tr>
+                    <td style="BORDER-RIGHT: black 2px solid; BORDER-TOP: black 2px solid; BORDER-LEFT: black 2px solid; BORDER-BOTTOM: black 2px solid" width="550">
+                        <textarea readonly id="output_txt" style="FONT-FAMILY: Helvetica" rows="19" cols="71"></textarea>
+                    </td>
+                        
+                    </textarea>
+                    <td style="BORDER-RIGHT: black 2px solid; BORDER-TOP: black 2px solid; BORDER-LEFT: black 2px solid; BORDER-BOTTOM: black 2px solid" width="450">
+                        <textarea id="input_txt" rows="13" style="FONT-FAMILY: Helvetica" cols="80"></textarea>
+                        <form>
+                            <table width="100%">
+                                <tbody>
+                                    <tr>
+                                        <td width="50%">
+                                            Length:<br>
+                                            <input id="max_length_input" type="number" value="2000" min="0" step="1"
+                                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                                    required/>
+                                        </td>
+                                        <td width="50%">
+                                            Pad side: <br>
+                                            <input id="opt_left" type="radio" name="optval">Left<br>
+                                            <input id="opt_center" type="radio" name="optval">Center<br>
+                                            <input id="opt_right" type="radio" name="optval" checked="">Right<br>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
 </html>
