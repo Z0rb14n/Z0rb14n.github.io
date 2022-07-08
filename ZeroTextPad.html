@@ -70,6 +70,12 @@
                 let container = document.getElementById(outputContainerId);
                 container.value = newtxt;
             }
+
+            function onOutputClick() {
+                let container = document.getElementById(outputContainerId);
+                container.setSelectionRange(0,container.value.length);
+            }
+
         </script>
     <body onload="onload();">
         <h1>Zero width space text padder</h1>
@@ -78,7 +84,7 @@
             <tbody>
                 <tr>
                     <td style="BORDER-RIGHT: black 2px solid; BORDER-TOP: black 2px solid; BORDER-LEFT: black 2px solid; BORDER-BOTTOM: black 2px solid" width="550">
-                        <textarea readonly id="output_txt" style="FONT-FAMILY: Helvetica" rows="19" cols="71"></textarea>
+                        <textarea readonly id="output_txt" onClick="onOutputClick();" style="FONT-FAMILY: Helvetica" rows="19" cols="71"></textarea>
                     </td>
                         
                     </textarea>
