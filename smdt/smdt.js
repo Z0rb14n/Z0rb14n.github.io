@@ -1,16 +1,26 @@
 const audioContext = new AudioContext();
 const volumeControl = document.querySelector("input[name='volume']");
+/**
+ * @type {OscillatorNode}
+ */
 let activeOscillator = null;
 
+/**
+ * @type {GainNode}
+ */
 let mainGainNode = null;
+/**
+ * @type {GainNode}
+ */
 let subGainNode = null;
 
-function changeVolume(event) {
+function changeVolume(_) {
     mainGainNode.gain.value = volumeControl.value;
 }
 
 function onKeyPress(e) {
     if (pitchTestOnKeyPress(e)) return;
+    if (e.key === "c") playRandomMelody();
 }
 
 function setup() {
@@ -22,6 +32,7 @@ function setup() {
     subGainNode = audioContext.createGain();
     subGainNode.connect(mainGainNode);
     subGainNode.gain.value = 1;
+    initMelodyTest();
     initPitchTest();
     addEventListener('keydown', onKeyPress);
 }
@@ -49,7 +60,7 @@ async function playToneWithRamp(freq, durationMs, rampUpMs, rampDownMs) {
     if (rampUpMs > 0) {
         subGainNode.gain.value = 0;
         playTone(freq);
-        subGainNode.gain.linearRampToValueAtTime(1.0, audioContext.currentTime + rampUpMs/1000);
+        subGainNode.gain.linearRampToValueAtTime(1.0, audioContext.currentTime + rampUpMs / 1000);
         await delay(rampUpMs + durationMs);
     } else {
         subGainNode.gain.value = 1;
@@ -57,7 +68,7 @@ async function playToneWithRamp(freq, durationMs, rampUpMs, rampDownMs) {
         await delay(durationMs);
     }
     if (rampDownMs > 0) {
-        subGainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + rampDownMs/1000);
+        subGainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + rampDownMs / 1000);
         await delay(rampDownMs);
     }
     stopTone();
@@ -67,12 +78,15 @@ function stopTone() {
     if (activeOscillator) activeOscillator.stop();
     activeOscillator = null;
 }
+
 //#endregion
 
 //#region melody test
 const melodyTestLengths = [4, 5, 6, 7, 8, 9];
 const melodyTestCounts = [3, 3, 3, 3, 3, 3];
 const melodyTestToneIntervalMs = 650;
+// they don't actually say how long the duration is, we just give them one
+const melodyTestToneDurationMs = melodyTestToneIntervalMs;
 const melodyTestTimeBetweenStimuliMs = 1300;
 
 const noteFreq = {
@@ -102,6 +116,11 @@ const noteFreq = {
     B5: 493.8833 * 2,
 };
 
+/**
+ * @type {number[]}
+ */
+const semitonesAboveC4Freq = Object.values(noteFreq);
+
 const semitonesAboveC = {
     C: 0,
     D: 2,
@@ -113,6 +132,187 @@ const semitonesAboveC = {
 }
 
 const octaveSemitones = 12;
+
+/**
+ * @type {Set[]}
+ */
+const noteScaleLookup = new Array(12);
+
+/**
+ * @param {number[]} array
+ * @returns {number[]}
+ */
+function simplePrefixSum(array) {
+    /**
+     * @type {number[]}
+     */
+    const retVal = new Array(array.length+1);
+    retVal[0] = 0;
+    for (let i = 0; i < array.length; i++) {
+        retVal[i+1] = array[i]+retVal[i];
+    }
+    return retVal;
+}
+const majorScale = [2, 2, 1, 2, 2, 2, 1];
+const majorScalePrefixSum = simplePrefixSum(majorScale);
+const naturalMinorScale = [2, 1, 2, 2, 1, 2, 2];
+const naturalMinorScalePrefixSum = simplePrefixSum(naturalMinorScale);
+const harmonicMinorScale = [2, 1, 2, 2, 1, 3, 1];
+const harmonicMinorScalePrefixSum = simplePrefixSum(harmonicMinorScale);
+const melodicMinorAscendingScale = [2, 1, 2, 2, 2, 2, 1];
+const melodicMinorAscendingScalePrefixSum = simplePrefixSum(melodicMinorAscendingScale);
+
+/**
+ * @param {number[]} stimulus
+ */
+function isValidMelody(stimulus) {
+    // (i) each pitch occurred only once
+    if (new Set(stimulus).size !== stimulus.length) return false;
+    // (ii) not all pitches in the sequence belonged to the same tonal (i.e., major, ascending minor, descending minor, or harmonic minor) scale
+    let scaleSet = noteScaleLookup[(stimulus[0] % 12)];
+    for (let i = 1; i < stimulus.length; i++) {
+        scaleSet = scaleSet.intersection(noteScaleLookup[(stimulus[i] % 12)]);
+    }
+    if (scaleSet.size > 0) return false;
+    let prevNote = stimulus[0];
+    for (let i = 1; i < stimulus.length; i++) {
+        let currNote = stimulus[i];
+        // (iii) all intervals between consecutive tones were smaller than one octave
+        if (Math.abs(currNote - prevNote) >= octaveSemitones) return false;
+        prevNote = currNote;
+    }
+    return true;
+}
+
+/**
+ * @param {number} len
+ * @returns {number[]}
+ */
+function generateRandomMelody(len) {
+    /**
+     * @type {number[]}
+     */
+    let retVal = new Array(len);
+    const globalMax = semitonesAboveC4Freq.length;
+    /**
+     * @type {Set<number>}
+     */
+    const used = new Set();
+    retVal[0] = Math.floor(Math.random()*globalMax);
+    used.add(retVal[0]);
+    for (let i = 1; i < len; i++) {
+        let min = Math.max(0, retVal[i-1] - (octaveSemitones-1));
+        let max = Math.min(globalMax, retVal[i-1] + (octaveSemitones-1));
+        /**
+         * @type {number[]}
+         */
+        let allowedVals = [];
+        for (let i = min; i <= max; i++) {
+            if (!used.has(i)) allowedVals.push(i);
+        }
+        if (allowedVals.length === 0) throw new Error("AAAAAAAA");
+        retVal[i] = allowedVals[Math.floor(Math.random() * allowedVals.length)];
+        used.add(retVal[i]);
+    }
+    return retVal;
+}
+
+function testABunchOfRandomMelodies(numMelodies, len) {
+    let successful = 0;
+    for (let i = 0; i < numMelodies; i++) {
+        const melody = generateRandomMelody(len);
+        if (isValidMelody(melody)) {
+            successful++;
+        }
+    }
+    console.log(`${successful}/${numMelodies} tried, ${successful/numMelodies} success rate`);
+    // len 4: 19502/100000 tried, 0.19502 success rate
+    // len 5: 43497/100000 tried, 0.43497 success rate
+    // len 6: 67088/100000 tried, 0.67088 success rate
+    // len 7: 83523/100000 tried, 0.83523 success rate
+    // len 8: 92704/100000 tried, 0.92704 success rate
+    // len 9: 97130/100000 tried, 0.9713 success rate
+}
+
+// console.assert(!isValidMelody([0,0,1,2,3,4,5,6,7,8,9,10,11])); // duplicate note
+// console.assert(!isValidMelody([0,2,4,5,7,9,11])); // same scale (C major)
+// console.assert(!isValidMelody([0,13,2,3,4,5,6,7,8,9,10,11])); // intervals must be smaller than one octave
+
+/**
+ * @param {number[]} stimulusOne
+ * @param {number[]} stimulusTwo
+ * @returns {boolean}
+ */
+function areValidMelodies(stimulusOne, stimulusTwo) {
+    if (stimulusOne.length !== stimulusTwo.length) return false;
+    if (!isValidMelody(stimulusOne) || !isValidMelody(stimulusTwo)) return false;
+    let prevNoteOne = stimulusOne[0];
+    let prevNoteTwo = stimulusTwo[0];
+    let hasFoundDifference = prevNoteOne !== prevNoteTwo;
+    for (let i = 1; i < stimulusOne.length; i++) {
+        let currOne = stimulusOne[i];
+        let currTwo = stimulusTwo[i];
+        // random alteration of a single note in the second stimulus should not change the melodic contour of the original sequence
+        if (Math.sign(currOne - prevNoteOne) !== Math.sign(currTwo - prevNoteTwo)) return false;
+        // check that only one difference is present
+        if (currOne !== currTwo) {
+            if (hasFoundDifference) return false;
+            hasFoundDifference = true;
+        }
+        prevNoteOne = currOne;
+        prevNoteTwo = currTwo;
+    }
+    return hasFoundDifference;
+
+}
+
+async function playMelody(melody) {
+    for (let i = 0; i < melody.length; i++) {
+        await playToneWithRamp(semitonesAboveC4Freq[melody[i]], melodyTestToneIntervalMs, 0, 0);
+        await delay(melodyTestToneIntervalMs - melodyTestToneDurationMs);
+    }
+}
+
+async function playRandomMelody() {
+    const melody = generateRandomMelody(9);
+    await playMelody(melody);
+}
+
+function initMelodyTest() {
+    function addArrayEntry(index, entry) {
+        if (noteScaleLookup[index] === undefined) noteScaleLookup[index] = new Set();
+        noteScaleLookup[index].add(entry);
+    }
+    // each major scale (C -> G -> D -> A -> E -> B -> F# -> C#) is +7 % 12
+    // in other direction (C -> F -> Bb -> Eb -> Ab -> Db -> Gb -> Cb) is +5 % 12
+    // to get minor do +9 % 12 (C major -> A minor)
+    for (let numScales = 0; numScales < 8; ++numScales) {
+        const majorSharpStartingNote = (numScales * 7) % 12;
+        const minorSharpStartingNote = (majorSharpStartingNote + 9) % 12;
+        const majorFlatStartingNote = (numScales * 5) % 12;
+        const minorFlatStartingNote = (majorFlatStartingNote + 9) % 12;
+        for (let numNotes = 0; numNotes < 8; numNotes++) {
+            let majorSharpNote = (majorSharpStartingNote + majorScalePrefixSum[numNotes]) % 12;
+            let naturalMinorSharpNote = (minorSharpStartingNote + naturalMinorScalePrefixSum[numNotes]) % 12;
+            let harmonicMinorSharpNote = (minorSharpStartingNote + harmonicMinorScalePrefixSum[numNotes]) % 12;
+            let melodicMinorSharpNote = (minorSharpStartingNote + melodicMinorAscendingScalePrefixSum[numNotes]) % 12;
+            addArrayEntry(majorSharpNote, `${majorSharpStartingNote}-major (pos)`);
+            addArrayEntry(naturalMinorSharpNote, `${minorSharpStartingNote}-nat minor (pos)`);
+            addArrayEntry(harmonicMinorSharpNote, `${minorSharpStartingNote}-harmonic minor (pos)`);
+            addArrayEntry(melodicMinorSharpNote, `${minorSharpStartingNote}-melodic minor (pos)`);
+            if (majorSharpStartingNote !== majorFlatStartingNote) {
+                let majorFlatNote = (majorFlatStartingNote + majorScalePrefixSum[numNotes]) % 12;
+                let naturalMinorFlatNote = (minorFlatStartingNote + naturalMinorScalePrefixSum[numNotes]) % 12;
+                let harmonicMinorFlatNote = (minorFlatStartingNote + harmonicMinorScalePrefixSum[numNotes]) % 12;
+                let melodicMinorFlatNote = (minorFlatStartingNote + melodicMinorAscendingScalePrefixSum[numNotes]) % 12;
+                addArrayEntry(majorFlatNote, `${majorFlatStartingNote}-major (neg)`);
+                addArrayEntry(naturalMinorFlatNote, `${minorFlatStartingNote}-nat minor (neg)`);
+                addArrayEntry(harmonicMinorFlatNote, `${minorFlatStartingNote}-harmonic minor (neg)`);
+                addArrayEntry(melodicMinorFlatNote, `${minorFlatStartingNote}-melodic minor (neg)`);
+            }
+        }
+    }
+}
 
 //#endregion
 
@@ -177,6 +377,7 @@ async function runNextPitchTest() {
     pitchTestBasePlayedFirst = Math.random() < 0.5;
     const firstPitch = pitchTestBasePlayedFirst ? pitchTestFrequency : pitchTestFrequency + difference;
     const secondPitch = pitchTestBasePlayedFirst ? pitchTestFrequency + difference : pitchTestFrequency;
+    await delay(pitchTestSilenceMs);
     pitchTestNowPlaying.innerHTML = "Playing Pitch 1";
     await playToneWithRamp(firstPitch, pitchTestDurationMs, pitchTestRampUpMs, pitchTestRampDownMs);
     pitchTestNowPlaying.innerHTML = "";

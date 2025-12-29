@@ -22,5 +22,7 @@ that more closely aligns with the overall test score (i.e. removes outliers of e
 
 However, we don't have the ability to do that, so we'll just randomly throw them at you.
 
+Also, the paper doesn't specify how long the melody test plays the tone for, so I play for the entire interval duration.
+
 # Links
 - See https://www.sciencedirect.com/science/article/pii/S0191886914000841
