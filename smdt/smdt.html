@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<head>
+    <title>Bad JS in website</title>
+    <link rel="shortcut icon" href="../images/cat.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="settingsBar">
+    <div class="left">
+        <span>Volume: </span>
+        <input
+                type="range"
+                min="0.0"
+                max="1.0"
+                step="0.01"
+                value="0.5"
+                list="volumes"
+                name="volume"/>
+        <datalist id="volumes">
+            <option value="0.0" label="Mute"></option>
+            <option value="1.0" label="100%"></option>
+        </datalist>
+    </div>
+</div>
+
+<div id="pitch-test">
+    <button onclick="pitchTestStarted()" id="pitch-test-start">Start</button>
+    <button onclick="higherClicked()" id="pitch-test-higher">Higher</button>
+    <button onclick="lowerClicked()" id="pitch-test-lower">Lower</button>
+</div>
+<script src="smdt.js"></script>
+</body>
