@@ -20,5 +20,7 @@ The user has to distinguish between a 500Hz and a 500+(1,2,3,4,5,8,12,17)Hz tone
 Melody and Rhythm tests are supposed to have 36 tests and then they use a restricted set of 18
 that more closely aligns with the overall test score (i.e. removes outliers of extremely hard or easy tests).
 
+However, we don't have the ability to do that, so we'll just randomly throw them at you.
+
 # Links
 - See https://www.sciencedirect.com/science/article/pii/S0191886914000841

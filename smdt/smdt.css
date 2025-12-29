@@ -1,0 +1,11 @@
+.settings-bar {
+    height: 40px;
+    position: fixed;
+    bottom: 0;
+    width:100%;
+    opacity: 1;
+}
+
+* {
+    font-family: 'Open Sans', sans-serif;
+}

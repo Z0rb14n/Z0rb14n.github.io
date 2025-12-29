@@ -2,9 +2,10 @@
 <head>
     <title>Bad JS in website</title>
     <link rel="shortcut icon" href="../images/cat.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./smdt.css">
 </head>
 <body>
-<div class="settingsBar">
+<div class="settings-bar">
     <div class="left">
         <span>Volume: </span>
         <input
@@ -23,9 +24,21 @@
 </div>
 
 <div id="pitch-test">
+    <h1>Pitch Test</h1>
+    <div id="pitch-test-now-playing">
+
+    </div>
     <button onclick="pitchTestStarted()" id="pitch-test-start">Start</button>
-    <button onclick="higherClicked()" id="pitch-test-higher">Higher</button>
-    <button onclick="lowerClicked()" id="pitch-test-lower">Lower</button>
+    <button onclick="higherClicked()" id="pitch-test-higher">Second Pitch Higher (h)</button>
+    <button onclick="lowerClicked()" id="pitch-test-lower">Second Pitch Lower (l)</button>
+    <div id="pitch-test-result">
+        <span id="pitch-test-passed-tests">0</span>
+        /
+        <span id="pitch-test-total-tests">0</span>
+        <ol id="pitch-test-fail-details">
+
+        </ol>
+    </div>
 </div>
 <script src="smdt.js"></script>
 </body>
