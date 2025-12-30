@@ -92,6 +92,7 @@ const melodyTestTimeBetweenStimuliMs = 1300;
 const melodyTestVisual = document.querySelector("svg[id='melody-test-visual']");
 const melodyTestNowPlaying = document.querySelector("div[id='melody-test-now-playing']");
 const melodyTestStartButton = document.querySelector("button[id='melody-test-start']");
+const melodyTestStopButton = document.querySelector("button[id='melody-test-stop']");
 const melodyTestTotalTests = document.querySelector("span[id='melody-test-total-tests']");
 const melodyTestPassedTests = document.querySelector("span[id='melody-test-passed-tests']");
 const melodyTestFailedTestDetails = document.querySelector("ol[id='melody-test-fail-details']");
@@ -401,9 +402,12 @@ function melodyTestFailed(diffIndex, reportedDiffIndex) {
 
 async function playMelody(melody) {
     for (let i = 0; i < melody.length; i++) {
+        if (melodyTestStopping) return;
         markNotePlayStatus(i, true);
         await playToneWithRamp(semitonesAboveC4Freq[melody[i]], melodyTestToneIntervalMs, 0, 0);
         markNotePlayStatus(i, false);
+
+        if (melodyTestStopping) return;
         await delay(melodyTestToneIntervalMs - melodyTestToneDurationMs);
     }
 }
@@ -425,6 +429,7 @@ function generateMelodyPair(len) {
     }
 }
 
+let melodyTestStopping = false;
 let melodyTestIndex = 0;
 let melodyTestCount = 0;
 let melodyTestNumTests = 0;
@@ -442,6 +447,8 @@ let melodyTestModified = [];
 async function runNextMelodyTest() {
     if (melodyTestIndex >= melodyTestLengths.length) {
         melodyTestStartButton.disabled = false;
+        pitchTestStartButton.disabled = false;
+        melodyTestStopButton.disabled = true;
         return;
     }
     if (melodyTestCount >= melodyTestCounts[pitchTestIndex]) {
@@ -449,6 +456,8 @@ async function runNextMelodyTest() {
         melodyTestCount = 0;
         if (melodyTestIndex >= melodyTestLengths.length) {
             melodyTestStartButton.disabled = false;
+            pitchTestStartButton.disabled = false;
+            melodyTestStopButton.disabled = true;
             return;
         }
         ensureExactNumberOfNotes(melodyTestLengths[melodyTestIndex]);
@@ -458,11 +467,15 @@ async function runNextMelodyTest() {
     let pair = generateMelodyPair(melodyTestLengths[melodyTestIndex]);
     melodyTestOriginal = pair[0];
     melodyTestModified = pair[1];
+    if (melodyTestStopping) return;
     await delay(melodyTestTimeBetweenStimuliMs);
+    if (melodyTestStopping) return;
     melodyTestNowPlaying.innerHTML = "Playing Melody 1";
     await playMelody(melodyTestOriginal);
     melodyTestNowPlaying.innerHTML = "";
+    if (melodyTestStopping) return;
     await delay(melodyTestTimeBetweenStimuliMs);
+    if (melodyTestStopping) return;
     melodyTestNowPlaying.innerHTML = "Playing Melody 2";
     await playMelody(melodyTestModified);
     melodyTestNowPlaying.innerHTML = "";
@@ -478,8 +491,20 @@ function startMelodyTest() {
     melodyTestFailedTestDetails.innerHTML = "";
     melodyTestTotalTests.innerHTML = melodyTestNumTests;
     melodyTestPassedTests.innerHTML = melodyTestNumPassedTests;
+    pitchTestStartButton.disabled = true;
+    melodyTestStopButton.disabled = false;
+    melodyTestStopping = false;
     ensureExactNumberOfNotes(melodyTestLengths[0]);
     runNextMelodyTest();
+}
+
+function stopMelodyTest() {
+    melodyTestStartButton.disabled = false;
+    pitchTestStartButton.disabled = false;
+    melodyTestStartButton.disabled = false;
+    melodyTestStopButton.disabled = true;
+    melodyTestStopping = true;
+    stopTone();
 }
 
 function initMelodyTest() {
@@ -574,6 +599,7 @@ async function runNextPitchTest() {
         pitchTestStartButton.disabled = false;
         pitchTestHigherButton.disabled = true;
         pitchTestLowerButton.disabled = true;
+        melodyTestStartButton.disabled = false;
         return;
     }
     if (pitchTestCount >= pitchTestCounts[pitchTestIndex]) {
@@ -583,6 +609,7 @@ async function runNextPitchTest() {
             pitchTestStartButton.disabled = false;
             pitchTestHigherButton.disabled = true;
             pitchTestLowerButton.disabled = true;
+            melodyTestStartButton.disabled = false;
             return;
         }
     }
@@ -653,6 +680,7 @@ function pitchTestStarted() {
     pitchTestFailedTestDetails.innerHTML = "";
     pitchTestTotalTests.innerHTML = pitchTestNumTests;
     pitchTestPassedTests.innerHTML = pitchTestNumPassedTests;
+    melodyTestStartButton.disabled = true;
     runNextPitchTest();
 }
 
