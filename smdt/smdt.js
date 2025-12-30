@@ -146,7 +146,7 @@ function setup() {
     mainGainNode.gain.value = volumeControl.value;
     subGainNode = audioContext.createGain();
     subGainNode.connect(mainGainNode);
-    subGainNode.gain.value = 1;
+    subGainNode.gain.setValueAtTime(1.0, 0);
     addEventListener('keydown', onKeyPress);
 }
 
@@ -169,16 +169,17 @@ function playTone(freq) {
 
 async function playToneWithRamp(freq, durationMs, rampUpMs, rampDownMs) {
     if (rampUpMs > 0) {
-        subGainNode.gain.value = 0;
+        subGainNode.gain.setValueAtTime(0.0, 0);
         playTone(freq);
         subGainNode.gain.linearRampToValueAtTime(1.0, audioContext.currentTime + rampUpMs / 1000);
         await delay(rampUpMs + durationMs);
     } else {
-        subGainNode.gain.value = 1;
+        subGainNode.gain.setValueAtTime(1.0, 0);
         playTone(freq);
         await delay(durationMs);
     }
     if (rampDownMs > 0) {
+        subGainNode.gain.setValueAtTime(1.0, 0);
         subGainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + rampDownMs / 1000);
         await delay(rampDownMs);
     }

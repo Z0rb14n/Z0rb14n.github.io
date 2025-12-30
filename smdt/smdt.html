@@ -5,33 +5,16 @@
     <link rel="stylesheet" href="./smdt.css">
 </head>
 <body>
-<div class="settings-bar">
-    <div class="left">
-        <span>Volume: </span>
-        <input
-                type="range"
-                min="0.0"
-                max="1.0"
-                step="0.01"
-                value="0.5"
-                list="volumes"
-                name="volume"/>
-        <datalist id="volumes">
-            <option value="0.0" label="Mute"></option>
-            <option value="1.0" label="100%"></option>
-        </datalist>
-    </div>
-</div>
 <div id="melody-test">
     <h1>Melody Test</h1>
-    <div id="melody-test-now-playing">
-
-    </div>
+    <div id="melody-test-now-playing" class="now-playing"></div>
     <svg id="melody-test-visual" height="40" width="700" xmlns="http://www.w3.org/2000/svg">
     </svg>
     <br/>
-    <button onclick="melodyTest.startTest()" id="melody-test-start">Start</button>
-    <button onclick="melodyTest.stopTest()" id="melody-test-stop" disabled="disabled">Stop</button>
+    <button onclick="melodyTest.startTest()" id="melody-test-start" class="scuffed-button start-button">Start</button>
+    <button onclick="melodyTest.stopTest()" id="melody-test-stop" disabled="disabled"
+            class="scuffed-button stop-button">Stop
+    </button>
     <div id="melody-test-result">
         <span id="melody-test-passed-tests">0</span>
         /
@@ -43,13 +26,17 @@
 </div>
 <div id="rhythm-test">
     <h1>Rhythm Test</h1>
-    <div id="rhythm-test-now-playing">
-
-    </div>
-    <button onclick="rhythmTest.startTest()" id="rhythm-test-start">Start</button>
-    <button onclick="rhythmTest.onUserInput(false)" id="rhythm-test-identical">Rhythms Identical (i)</button>
-    <button onclick="rhythmTest.onUserInput(true)" id="rhythm-test-different">Rhythms Different (d)</button>
-    <button onclick="rhythmTest.stopTest()" id="rhythm-test-stop" disabled="disabled">Stop</button>
+    <div id="rhythm-test-now-playing" class="now-playing"></div>
+    <button onclick="rhythmTest.startTest()" id="rhythm-test-start" class="scuffed-button start-button">Start</button>
+    <button onclick="rhythmTest.onUserInput(false)" id="rhythm-test-identical" class="scuffed-button left-button">
+        Rhythms Identical (i)
+    </button>
+    <button onclick="rhythmTest.onUserInput(true)" id="rhythm-test-different" class="scuffed-button right-button">
+        Rhythms Different (d)
+    </button>
+    <button onclick="rhythmTest.stopTest()" id="rhythm-test-stop" disabled="disabled"
+            class="scuffed-button stop-button">Stop
+    </button>
     <div id="rhythm-test-result">
         <span id="rhythm-test-passed-tests">0</span>
         /
@@ -61,13 +48,17 @@
 </div>
 <div id="pitch-test">
     <h1>Pitch Test</h1>
-    <div id="pitch-test-now-playing">
-
-    </div>
-    <button onclick="pitchTest.startTest()" id="pitch-test-start">Start</button>
-    <button onclick="pitchTest.onUserInput(true)" id="pitch-test-higher">Second Pitch Higher (h)</button>
-    <button onclick="pitchTest.onUserInput(false)" id="pitch-test-lower">Second Pitch Lower (l)</button>
-    <button onclick="pitchTest.stopTest()" id="pitch-test-stop" disabled="disabled">Stop</button>
+    <div id="pitch-test-now-playing" class="now-playing"></div>
+    <button onclick="pitchTest.startTest()" id="pitch-test-start" class="scuffed-button start-button">Start</button>
+    <button onclick="pitchTest.onUserInput(true)" id="pitch-test-higher" class="scuffed-button left-button">Second Pitch
+        Higher (h)
+    </button>
+    <button onclick="pitchTest.onUserInput(false)" id="pitch-test-lower" class="scuffed-button right-button">Second
+        Pitch Lower (l)
+    </button>
+    <button onclick="pitchTest.stopTest()" id="pitch-test-stop" disabled="disabled" class="scuffed-button stop-button">
+        Stop
+    </button>
     <div id="pitch-test-result">
         <span id="pitch-test-passed-tests">0</span>
         /
@@ -76,6 +67,21 @@
 
         </ol>
     </div>
+</div>
+<div class="settings-bar">
+    <span>Volume: </span>
+    <input
+            type="range"
+            min="0.0"
+            max="1.0"
+            step="0.01"
+            value="0.5"
+            list="volumes"
+            name="volume"/>
+    <datalist id="volumes">
+        <option value="0.0" label="Mute"></option>
+        <option value="1.0" label="100%"></option>
+    </datalist>
 </div>
 <script src="smdt.js"></script>
 <script src="testing.js"></script>

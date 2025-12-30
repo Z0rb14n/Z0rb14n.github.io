@@ -2,6 +2,9 @@ addEventListener('keydown', onKeyPressForTesting);
 
 function onKeyPressForTesting(e) {
     if (e.key === "c") playRandomMelody();
+    if (e.key === "k") {
+        playToneWithRamp(500, 500, 500, 500);
+    }
 }
 
 async function playRandomMelody() {

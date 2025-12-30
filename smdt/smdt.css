@@ -4,6 +4,48 @@
     bottom: 0;
     width:100%;
     opacity: 1;
+    display: flex;
+    align-items: center;
+}
+
+.now-playing {
+    min-height: 20px;
+}
+
+.scuffed-button {
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.scuffed-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.start-button {
+    background-color: #04AA6D;
+}
+
+.left-button {
+    background-color: #e7e7e7;
+    color: black;
+}
+
+.right-button {
+    background-color: #e7e7e7;
+    color: black;
+}
+
+.stop-button {
+    background-color: #f44336;
 }
 
 * {
