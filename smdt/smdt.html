@@ -30,8 +30,8 @@
     <svg id="melody-test-visual" height="40" width="700" xmlns="http://www.w3.org/2000/svg">
     </svg>
     <br/>
-    <button onclick="startMelodyTest()" id="melody-test-start">Start</button>
-    <button onclick="stopMelodyTest()" id="melody-test-stop" disabled="disabled">Stop</button>
+    <button onclick="melodyTest.startTest()" id="melody-test-start">Start</button>
+    <button onclick="melodyTest.stopTest()" id="melody-test-stop" disabled="disabled">Stop</button>
     <div id="melody-test-result">
         <span id="melody-test-passed-tests">0</span>
         /
@@ -41,14 +41,33 @@
         </ol>
     </div>
 </div>
+<div id="rhythm-test">
+    <h1>Rhythm Test</h1>
+    <div id="rhythm-test-now-playing">
+
+    </div>
+    <button onclick="rhythmTest.startTest()" id="rhythm-test-start">Start</button>
+    <button onclick="rhythmTest.onUserInput(false)" id="rhythm-test-identical">Rhythms Identical (i)</button>
+    <button onclick="rhythmTest.onUserInput(true)" id="rhythm-test-different">Rhythms Different (d)</button>
+    <button onclick="rhythmTest.stopTest()" id="rhythm-test-stop" disabled="disabled">Stop</button>
+    <div id="rhythm-test-result">
+        <span id="rhythm-test-passed-tests">0</span>
+        /
+        <span id="rhythm-test-total-tests">0</span>
+        <ol id="rhythm-test-fail-details">
+
+        </ol>
+    </div>
+</div>
 <div id="pitch-test">
     <h1>Pitch Test</h1>
     <div id="pitch-test-now-playing">
 
     </div>
-    <button onclick="pitchTestStarted()" id="pitch-test-start">Start</button>
-    <button onclick="higherClicked()" id="pitch-test-higher">Second Pitch Higher (h)</button>
-    <button onclick="lowerClicked()" id="pitch-test-lower">Second Pitch Lower (l)</button>
+    <button onclick="pitchTest.startTest()" id="pitch-test-start">Start</button>
+    <button onclick="pitchTest.onUserInput(true)" id="pitch-test-higher">Second Pitch Higher (h)</button>
+    <button onclick="pitchTest.onUserInput(false)" id="pitch-test-lower">Second Pitch Lower (l)</button>
+    <button onclick="pitchTest.stopTest()" id="pitch-test-stop" disabled="disabled">Stop</button>
     <div id="pitch-test-result">
         <span id="pitch-test-passed-tests">0</span>
         /
