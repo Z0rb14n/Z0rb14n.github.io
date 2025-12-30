@@ -97,19 +97,20 @@ class AbstractTest {
     async runNextTest() {
         if (this.testIndex >= this.tests.length) {
             this.onTestFinish();
-            return;
+            return false;
         }
         if (this.testCount >= this.testCounts[this.testIndex]) {
             this.testIndex++;
             this.testCount = 0;
             if (this.testIndex >= this.tests.length) {
                 this.onTestFinish();
-                return;
+                return false;
             }
             this.onTestChanged();
         }
         this.testCount++;
         this.awaitingInput = false;
+        return true;
     }
 
     startTest() {
@@ -131,8 +132,7 @@ class AbstractTest {
         pitchTest.startButton.disabled = false;
         rhythmTest.startButton.disabled = false;
         melodyTest.startButton.disabled = false;
-        this.startButton.disabled = false;
-        this.stopButton.disabled = true;
+        this.onTestFinish();
         this.stopping = true;
         stopTone();
     }
@@ -153,8 +153,6 @@ function setup() {
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
-//#region tone playing util
 
 function playTone(freq) {
     if (activeOscillator !== null) {
@@ -191,8 +189,6 @@ function stopTone() {
     if (activeOscillator) activeOscillator.stop();
     activeOscillator = null;
 }
-
-//#endregion
 
 class MelodyTest extends AbstractTest {
     static #noteFreq = {
@@ -419,8 +415,7 @@ class MelodyTest extends AbstractTest {
                 if (prev > curr) {
                     max = Math.min(max, prev-1);
                     min = Math.max(min, prev - MelodyTest.#octaveSemitones+1);
-                }
-                else {
+                } else {
                     min = Math.max(min, prev+1);
                     max = Math.min(max, prev + MelodyTest.#octaveSemitones-1);
                 }
@@ -598,23 +593,24 @@ class MelodyTest extends AbstractTest {
     }
 
     async runNextTest() {
-        await super.runNextTest();
+        if (!await super.runNextTest()) return false;
         let pair = MelodyTest.#generateMelodyPair(this.tests[this.testIndex]);
         this.originalMelody = pair[0];
         this.modifiedMelody = pair[1];
-        if (this.stopping) return;
+        if (this.stopping) return false;
         await delay(this.timeBetweenStimuliMs);
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.nowPlayingDisplay.innerHTML = "Playing Melody 1";
         await this.playMelody(this.originalMelody);
         this.nowPlayingDisplay.innerHTML = "";
-        if (this.stopping) return;
+        if (this.stopping) return false;
         await delay(this.timeBetweenStimuliMs);
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.nowPlayingDisplay.innerHTML = "Playing Melody 2";
         await this.playMelody(this.modifiedMelody);
         this.nowPlayingDisplay.innerHTML = "";
         this.awaitingInput = true;
+        return true;
     }
 
     onKeyPress(e) {
@@ -646,7 +642,6 @@ const melodyTestDefaultTimeBetweenStimuliMs = 1300;
 const melodyTest = new MelodyTest(melodyTestDefaultLengths,
     melodyTestDefaultCounts, melodyTestDefaultToneIntervalMs, melodyTestDefaultToneDurationMs, melodyTestDefaultTimeBetweenStimuliMs);
 
-//#region rhythm test
 class RhythmTest extends AbstractTest {
     static #rhythmModifyAttempts = 10;
     static #areRhythmsEqual(rhythmOne, rhythmTwo) {
@@ -781,6 +776,8 @@ class RhythmTest extends AbstractTest {
         super.onTestFinish();
         melodyTest.startButton.disabled = false;
         pitchTest.startButton.disabled = false;
+        this.identicalButton.disabled = true;
+        this.differentButton.disabled = true;
     }
 
     onUserInput(different) {
@@ -796,28 +793,29 @@ class RhythmTest extends AbstractTest {
     }
 
     async runNextTest() {
-        await super.runNextTest();
+        if (!await super.runNextTest()) return false;
         this.identicalButton.disabled = true;
         this.differentButton.disabled = true;
         const rhythmPair = this.#generateRhythmPair(this.tests[this.testIndex]);
         this.originalRhythm = rhythmPair[0];
         this.modifiedRhythm = rhythmPair[1];
-        if (this.stopping) return;
+        if (this.stopping) return false;
         await delay(this.timeBetweenStimuliMs);
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.nowPlayingDisplay.innerHTML = "Playing Rhythm 1";
         await this.playRhythm(this.originalRhythm);
         this.nowPlayingDisplay.innerHTML = "";
-        if (this.stopping) return;
+        if (this.stopping) return false;
         await delay(this.timeBetweenStimuliMs);
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.nowPlayingDisplay.innerHTML = "Playing Rhythm 2";
         await this.playRhythm(this.modifiedRhythm);
         this.nowPlayingDisplay.innerHTML = "";
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.awaitingInput = true;
         this.identicalButton.disabled = false;
         this.differentButton.disabled = false;
+        return true;
     }
 
     onKeyPress(e) {
@@ -848,9 +846,6 @@ const rhythmTest = new RhythmTest(rhythmTestDefaultLengths, rhythmTestDefaultCou
     rhythmTestDefaultFrequency, rhythmTestDefaultToneIntervalMs, rhythmTestDefaultProbabilityOfSame,
     rhythmTestDefaultStartPointChangeOnlyProb, rhythmTestDefaultNoteSwapOnlyProb);
 
-//#endregion
-
-//#region Pitch Test
 const pitchTestDefaultFrequency = 500;
 const pitchTestDefaultRampUpMs = 30;
 const pitchTestDefaultDurationMs = 530;
@@ -900,7 +895,7 @@ class PitchTest extends AbstractTest {
         if (higher === this.basePlayedFirst) {
             this.onTestPass();
         } else {
-            const difference = this.tests[this.index];
+            const difference = this.tests[this.testIndex];
             const firstPitch = this.basePlayedFirst ? this.toneFreq : this.toneFreq + difference;
             const secondPitch = this.basePlayedFirst ? this.toneFreq + difference : this.toneFreq;
             this.onTestFail(`Test ${this.numTests} failed, frequencies were ${firstPitch}/${secondPitch}, was marked ${this.basePlayedFirst ? "Lower" : "Higher"}`);
@@ -910,34 +905,37 @@ class PitchTest extends AbstractTest {
 
     onTestFinish(){
         super.onTestFinish();
+        this.higherButton.disabled = true;
+        this.lowerButton.disabled = true;
         melodyTest.startButton.disabled = false;
         rhythmTest.startButton.disabled = false;
     }
 
     async runNextTest() {
-        await super.runNextTest();
+        if (!await super.runNextTest()) return false;
         this.higherButton.disabled = true;
         this.lowerButton.disabled = true;
         const difference = this.tests[this.testIndex];
         this.basePlayedFirst = Math.random() < 0.5;
         const firstPitch = this.basePlayedFirst ? this.toneFreq : this.toneFreq + difference;
         const secondPitch = this.basePlayedFirst ? this.toneFreq + difference : this.toneFreq;
-        if (this.stopping) return;
+        if (this.stopping) return false;
         await delay(this.silenceMs);
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.nowPlayingDisplay.innerHTML = "Playing Pitch 1";
         await playToneWithRamp(firstPitch, this.durationMs, this.rampUpMs, this.rampDownMs);
         this.nowPlayingDisplay.innerHTML = "";
-        if (this.stopping) return;
+        if (this.stopping) return false;
         await delay(this.silenceMs);
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.nowPlayingDisplay.innerHTML = "Playing Pitch 2";
         await playToneWithRamp(secondPitch, this.durationMs, this.rampUpMs, this.rampDownMs);
         this.nowPlayingDisplay.innerHTML = "";
-        if (this.stopping) return;
+        if (this.stopping) return false;
         this.awaitingInput = true;
         this.higherButton.disabled = false;
         this.lowerButton.disabled = false;
+        return true;
     }
 
     startTest() {
@@ -963,7 +961,5 @@ class PitchTest extends AbstractTest {
 
 const pitchTest = new PitchTest(pitchTestDefaultDifferences, pitchTestDefaultCounts,
     pitchTestDefaultRampUpMs, pitchTestDefaultRampDownMs, pitchTestDefaultDurationMs, pitchTestDefaultSilenceMs, pitchTestDefaultFrequency);
-
-//#endregion
 
 setup();
