@@ -581,6 +581,7 @@ let pitchTestCount = 0;
 let pitchTestNumTests = 0;
 let pitchTestNumPassedTests = 0;
 let pitchTestBasePlayedFirst = false;
+let pitchTestAwaitingInput = false;
 const pitchTestNowPlaying = document.querySelector("div[id='pitch-test-now-playing']");
 const pitchTestStartButton = document.querySelector("button[id='pitch-test-start']");
 const pitchTestHigherButton = document.querySelector("button[id='pitch-test-higher']");
@@ -616,6 +617,7 @@ async function runNextPitchTest() {
     pitchTestHigherButton.disabled = true;
     pitchTestLowerButton.disabled = true;
     pitchTestCount++;
+    pitchTestAwaitingInput = false;
     const difference = pitchTestDifferences[pitchTestIndex];
     pitchTestBasePlayedFirst = Math.random() < 0.5;
     const firstPitch = pitchTestBasePlayedFirst ? pitchTestFrequency : pitchTestFrequency + difference;
@@ -627,6 +629,7 @@ async function runNextPitchTest() {
     await delay(pitchTestSilenceMs);
     pitchTestNowPlaying.innerHTML = "Playing Pitch 2";
     await playToneWithRamp(secondPitch, pitchTestDurationMs, pitchTestRampUpMs, pitchTestRampDownMs);
+    pitchTestAwaitingInput = true;
     pitchTestNowPlaying.innerHTML = "";
     pitchTestHigherButton.disabled = false;
     pitchTestLowerButton.disabled = false;
@@ -681,14 +684,16 @@ function pitchTestStarted() {
     pitchTestTotalTests.innerHTML = pitchTestNumTests;
     pitchTestPassedTests.innerHTML = pitchTestNumPassedTests;
     melodyTestStartButton.disabled = true;
+    pitchTestAwaitingInput = false;
     runNextPitchTest();
 }
 
 function pitchTestOnKeyPress(e) {
-    if (!pitchTestHigherButton.disabled && e.key === 'h') {
+    if (!pitchTestAwaitingInput) return false;
+    if (e.key === 'h') {
         higherClicked();
         return true;
-    } else if (!pitchTestLowerButton.disabled && e.key === 'l') {
+    } else if (e.key === 'l') {
         lowerClicked();
         return true;
     }
