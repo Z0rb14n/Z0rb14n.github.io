@@ -22,7 +22,24 @@
         </datalist>
     </div>
 </div>
+<div id="melody-test">
+    <h1>Melody Test</h1>
+    <div id="melody-test-now-playing">
 
+    </div>
+    <svg id="melody-test-visual" height="40" width="700" xmlns="http://www.w3.org/2000/svg">
+    </svg>
+    <br/>
+    <button onclick="startMelodyTest()" id="melody-test-start">Start</button>
+    <div id="melody-test-result">
+        <span id="melody-test-passed-tests">0</span>
+        /
+        <span id="melody-test-total-tests">0</span>
+        <ol id="melody-test-fail-details">
+
+        </ol>
+    </div>
+</div>
 <div id="pitch-test">
     <h1>Pitch Test</h1>
     <div id="pitch-test-now-playing">
@@ -41,4 +58,5 @@
     </div>
 </div>
 <script src="smdt.js"></script>
+<script src="testing.js"></script>
 </body>

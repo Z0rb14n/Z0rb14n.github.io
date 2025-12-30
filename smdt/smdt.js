@@ -20,7 +20,7 @@ function changeVolume(_) {
 
 function onKeyPress(e) {
     if (pitchTestOnKeyPress(e)) return;
-    if (e.key === "c") playRandomMelody();
+    if (melodyTestOnKeyPress(e)) return;
 }
 
 function setup() {
@@ -89,6 +89,13 @@ const melodyTestToneIntervalMs = 650;
 const melodyTestToneDurationMs = melodyTestToneIntervalMs;
 const melodyTestTimeBetweenStimuliMs = 1300;
 
+const melodyTestVisual = document.querySelector("svg[id='melody-test-visual']");
+const melodyTestNowPlaying = document.querySelector("div[id='melody-test-now-playing']");
+const melodyTestStartButton = document.querySelector("button[id='melody-test-start']");
+const melodyTestTotalTests = document.querySelector("span[id='melody-test-total-tests']");
+const melodyTestPassedTests = document.querySelector("span[id='melody-test-passed-tests']");
+const melodyTestFailedTestDetails = document.querySelector("ol[id='melody-test-fail-details']");
+
 const noteFreq = {
     C4: 261.6256,
     "C#4": 277.1826,
@@ -120,16 +127,6 @@ const noteFreq = {
  * @type {number[]}
  */
 const semitonesAboveC4Freq = Object.values(noteFreq);
-
-const semitonesAboveC = {
-    C: 0,
-    D: 2,
-    E: 4,
-    F: 5,
-    G: 7,
-    A: 9,
-    B: 11
-}
 
 const octaveSemitones = 12;
 
@@ -202,7 +199,7 @@ function generateRandomMelody(len) {
     used.add(retVal[0]);
     for (let i = 1; i < len; i++) {
         let min = Math.max(0, retVal[i-1] - (octaveSemitones-1));
-        let max = Math.min(globalMax, retVal[i-1] + (octaveSemitones-1));
+        let max = Math.min(globalMax-1, retVal[i-1] + (octaveSemitones-1));
         /**
          * @type {number[]}
          */
@@ -216,27 +213,34 @@ function generateRandomMelody(len) {
     }
     return retVal;
 }
+const melodyTestEllipseRadiusX = 20;
+const melodyTestEllipseRadiusY = 10;
+const melodyTestEllipseColor = "black";
+const melodyTestEllipseSpacing = 20;
+const melodyTestEllipsePlayColor = "green";
+const melodyTestCircleRadius = 8;
+const melodyTestCircleColor = "white";
 
-function testABunchOfRandomMelodies(numMelodies, len) {
-    let successful = 0;
-    for (let i = 0; i < numMelodies; i++) {
-        const melody = generateRandomMelody(len);
-        if (isValidMelody(melody)) {
-            successful++;
-        }
-    }
-    console.log(`${successful}/${numMelodies} tried, ${successful/numMelodies} success rate`);
-    // len 4: 19502/100000 tried, 0.19502 success rate
-    // len 5: 43497/100000 tried, 0.43497 success rate
-    // len 6: 67088/100000 tried, 0.67088 success rate
-    // len 7: 83523/100000 tried, 0.83523 success rate
-    // len 8: 92704/100000 tried, 0.92704 success rate
-    // len 9: 97130/100000 tried, 0.9713 success rate
+function createNote(index) {
+    const ellipse = document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+    ellipse.id = `melody-test-ellipse-${index}`;
+    ellipse.style.fill = melodyTestEllipseColor;
+    const posX = 3 + melodyTestEllipseRadiusX + (index * (2*melodyTestEllipseRadiusX + melodyTestEllipseSpacing));
+    ellipse.setAttribute("rx", melodyTestEllipseRadiusX);
+    ellipse.setAttribute("ry", melodyTestEllipseRadiusY);
+    ellipse.setAttribute("cy", 20);
+    ellipse.setAttribute("cx", posX);
+    ellipse.onclick = () => onMelodyButtonClicked(index);
+    melodyTestVisual.appendChild(ellipse);
+    const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    circle.id = `melody-test-circle-${index}`;
+    circle.setAttribute("r", melodyTestCircleRadius);
+    circle.style.fill = melodyTestCircleColor;
+    circle.setAttribute("cy", 20);
+    circle.setAttribute("cx", posX);
+    circle.onclick = () => onMelodyButtonClicked(index);
+    melodyTestVisual.appendChild(circle);
 }
-
-// console.assert(!isValidMelody([0,0,1,2,3,4,5,6,7,8,9,10,11])); // duplicate note
-// console.assert(!isValidMelody([0,2,4,5,7,9,11])); // same scale (C major)
-// console.assert(!isValidMelody([0,13,2,3,4,5,6,7,8,9,10,11])); // intervals must be smaller than one octave
 
 /**
  * @param {number[]} stimulusOne
@@ -266,16 +270,216 @@ function areValidMelodies(stimulusOne, stimulusTwo) {
 
 }
 
+/**
+ * @param {number[]} melody
+ * @returns {undefined|number[]}
+ */
+function modifyMelody(melody) {
+    const retVal = melody.slice();
+
+    /**
+     * @param {number[]} arr
+     * @returns {number}
+     */
+    function randRemove(arr) {
+        const rand = Math.floor(Math.random() * arr.length);
+        const v = arr[rand];
+        arr[rand] = arr[arr.length-1];
+        arr.pop();
+        return v;
+    }
+    /**
+     * @type {number[]}
+     */
+    let allowedIndices = new Array(melody.length);
+    for (let i = 0; i < melody.length; i++) allowedIndices[i] = i;
+    while (allowedIndices.length > 0) {
+        const index = randRemove(allowedIndices);
+
+        const curr = melody[index];
+        let min = 0;
+        let max = semitonesAboveC4Freq.length-1;
+        if (index > 0) {
+            const prev = melody[index-1];
+            if (prev > curr) {
+                max = Math.min(max, prev-1);
+                min = Math.max(min, prev - octaveSemitones+1);
+            }
+            else {
+                min = Math.max(min, prev+1);
+                max = Math.min(max, prev + octaveSemitones-1);
+            }
+        }
+        if (index < melody.length-1) {
+            const succ = melody[index+1];
+            if (succ > curr) {
+                max = Math.min(max, succ-1);
+                min = Math.max(min, succ-octaveSemitones+1);
+            } else {
+                min = Math.max(min, succ+1);
+                max = Math.min(max, succ+octaveSemitones-1);
+            }
+        }
+        /**
+         * @type {number[]}
+         */
+        let allowedValues = [];
+        for (let i = min; i <= max; i++) {
+            if (i !== curr) allowedValues.push(i);
+        }
+        while (allowedValues.length > 0) {
+            retVal[index] = randRemove(allowedValues);
+            if (areValidMelodies(melody, retVal)) return retVal;
+        }
+        retVal[index] = curr;
+    }
+    return undefined;
+}
+
+function ensureExactNumberOfNotes(len) {
+    const ellipses = melodyTestVisual.querySelectorAll("ellipse[id^='melody-test-ellipse']");
+    if (ellipses.length === len) return;
+    if (ellipses.length < len) {
+        for (let i = ellipses.length; i < len; i++) {
+            createNote(i);
+        }
+    } else {
+        for (let i = len; i < ellipses.length; i++) {
+            melodyTestVisual.removeChild(ellipses[i]);
+            melodyTestVisual.removeChild(melodyTestVisual.querySelector(`circle[id='melody-test-circle-${i}']`));
+        }
+    }
+}
+
+function markNotePlayStatus(index, status) {
+    const ellipse = melodyTestVisual.querySelector(`ellipse[id='melody-test-ellipse-${index}']`);
+    if (!ellipse) {
+        console.warn("bruv");
+        return;
+    }
+    ellipse.style.fill = status ? melodyTestEllipsePlayColor : melodyTestEllipseColor;
+}
+
+function onMelodyButtonClicked(index) {
+    if (!melodyTestAwaitingInput) return;
+    let diffIndex = -1;
+    for (let i = 0; i < melodyTestOriginal.length; i++) {
+        if (melodyTestOriginal[i] !== melodyTestModified[i]) {
+            diffIndex = i;
+            break;
+        }
+    }
+    if (diffIndex === -1) {
+        alert("yeah no the dev screwed up lol i'll mark it as correct");
+        melodyTestPassed();
+        return;
+    }
+    if (index !== diffIndex) melodyTestFailed(diffIndex, index);
+    else melodyTestPassed();
+    runNextMelodyTest();
+}
+
+function melodyTestPassed() {
+    console.log("Correct!");
+    melodyTestNumPassedTests++;
+    melodyTestNumTests++;
+    melodyTestPassedTests.innerHTML = melodyTestNumPassedTests;
+    melodyTestTotalTests.innerHTML = melodyTestNumTests;
+    melodyTestAwaitingInput = false;
+}
+
+function melodyTestFailed(diffIndex, reportedDiffIndex) {
+    console.log("rip");
+    melodyTestNumTests++;
+    melodyTestTotalTests.innerHTML = melodyTestNumTests;
+    const noteLi = document.createElement("li");
+    let text = `Test ${melodyTestNumTests} failed, different note was ${diffIndex}, was marked ${reportedDiffIndex}`;
+    noteLi.appendChild(document.createTextNode(text));
+    melodyTestFailedTestDetails.appendChild(noteLi);
+    melodyTestAwaitingInput = false;
+}
+
 async function playMelody(melody) {
     for (let i = 0; i < melody.length; i++) {
+        markNotePlayStatus(i, true);
         await playToneWithRamp(semitonesAboveC4Freq[melody[i]], melodyTestToneIntervalMs, 0, 0);
+        markNotePlayStatus(i, false);
         await delay(melodyTestToneIntervalMs - melodyTestToneDurationMs);
     }
 }
 
-async function playRandomMelody() {
-    const melody = generateRandomMelody(9);
-    await playMelody(melody);
+/**
+ * @param {number} len
+ * @returns {number[][]}
+ */
+function generateMelodyPair(len) {
+    while (true) {
+        try {
+            let firstMelody = generateRandomMelody(len);
+            while (!isValidMelody(firstMelody)) firstMelody = generateRandomMelody(len);
+            let secondMelody = modifyMelody(firstMelody);
+            if (secondMelody === undefined) continue;
+            return [firstMelody, secondMelody];
+        } catch (e) {
+        }
+    }
+}
+
+let melodyTestIndex = 0;
+let melodyTestCount = 0;
+let melodyTestNumTests = 0;
+let melodyTestNumPassedTests = 0;
+let melodyTestAwaitingInput = false;
+/**
+ * @type {number[]}
+ */
+let melodyTestOriginal = [];
+/**
+ * @type {number[]}
+ */
+let melodyTestModified = [];
+
+async function runNextMelodyTest() {
+    if (melodyTestIndex >= melodyTestLengths.length) {
+        melodyTestStartButton.disabled = false;
+        return;
+    }
+    if (melodyTestCount >= melodyTestCounts[pitchTestIndex]) {
+        melodyTestIndex++;
+        melodyTestCount = 0;
+        if (melodyTestIndex >= melodyTestLengths.length) {
+            melodyTestStartButton.disabled = false;
+            return;
+        }
+        ensureExactNumberOfNotes(melodyTestLengths[melodyTestIndex]);
+    }
+    melodyTestCount++;
+    melodyTestAwaitingInput = false;
+    let pair = generateMelodyPair(melodyTestLengths[melodyTestIndex]);
+    melodyTestOriginal = pair[0];
+    melodyTestModified = pair[1];
+    await delay(melodyTestTimeBetweenStimuliMs);
+    melodyTestNowPlaying.innerHTML = "Playing Melody 1";
+    await playMelody(melodyTestOriginal);
+    melodyTestNowPlaying.innerHTML = "";
+    await delay(melodyTestTimeBetweenStimuliMs);
+    melodyTestNowPlaying.innerHTML = "Playing Melody 2";
+    await playMelody(melodyTestModified);
+    melodyTestNowPlaying.innerHTML = "";
+    melodyTestAwaitingInput = true;
+}
+
+function startMelodyTest() {
+    melodyTestIndex = 0;
+    melodyTestCount = 0;
+    melodyTestNumTests = 0;
+    melodyTestNumPassedTests = 0;
+    melodyTestStartButton.disabled = true;
+    melodyTestFailedTestDetails.innerHTML = "";
+    melodyTestTotalTests.innerHTML = melodyTestNumTests;
+    melodyTestPassedTests.innerHTML = melodyTestNumPassedTests;
+    ensureExactNumberOfNotes(melodyTestLengths[0]);
+    runNextMelodyTest();
 }
 
 function initMelodyTest() {
@@ -312,6 +516,18 @@ function initMelodyTest() {
             }
         }
     }
+}
+
+function melodyTestOnKeyPress(e) {
+    if (!melodyTestAwaitingInput) return false;
+    const numKeys = melodyTestOriginal.length;
+    for (let i = 1; i <= numKeys; i++) {
+        if (e.key === `${i}`) {
+            onMelodyButtonClicked(i-1);
+            return true;
+        }
+    }
+    return false;
 }
 
 //#endregion
