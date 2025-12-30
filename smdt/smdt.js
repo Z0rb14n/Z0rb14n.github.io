@@ -20,9 +20,9 @@ function changeVolume(_) {
 }
 
 function onKeyPress(e) {
-    if (pitchTest.onKeyPress(e)) return;
-    if (melodyTest.onKeyPress(e)) return;
-    rhythmTest.onKeyPress(e);
+    for (const test of allTests) {
+        if (test.onKeyPress(e)) return;
+    }
 }
 
 class AbstractTest {
@@ -92,6 +92,7 @@ class AbstractTest {
     onTestFinish() {
         this.startButton.disabled = false;
         this.stopButton.disabled = true;
+        for (const test of allTests) test.startButton.disabled = false;
     }
 
     async runNextTest() {
@@ -119,6 +120,7 @@ class AbstractTest {
         this.numTests = 0;
         this.numPassedTests = 0;
         this.startButton.disabled = true;
+        for (const test of allTests) test.startButton.disabled = true;
         this.failedTestDetails.innerHTML = "";
         this.passedTestsDisplay.innerHTML = "0";
         this.totalTestsDisplay.innerHTML = "0";
@@ -129,9 +131,7 @@ class AbstractTest {
     }
 
     stopTest() {
-        pitchTest.startButton.disabled = false;
-        rhythmTest.startButton.disabled = false;
-        melodyTest.startButton.disabled = false;
+        for (const test of allTests) test.startButton.disabled = false;
         this.onTestFinish();
         this.stopping = true;
         stopTone();
@@ -149,6 +149,8 @@ function setup() {
     subGainNode.gain.setValueAtTime(1.0, 0);
     addEventListener('keydown', onKeyPress);
 }
+
+setup();
 
 function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -586,12 +588,6 @@ class MelodyTest extends AbstractTest {
         this.runNextTest();
     }
 
-    onTestFinish() {
-        super.onTestFinish();
-        pitchTest.startButton.disabled = false;
-        rhythmTest.startButton.disabled = false;
-    }
-
     onTestChanged() {
         super.onTestChanged();
         this.#ensureExactNumberOfNotes(this.tests[this.testIndex]);
@@ -631,10 +627,8 @@ class MelodyTest extends AbstractTest {
     }
 
     startTest() {
-        this.#ensureExactNumberOfNotes(this.tests[0]);
-        pitchTest.startButton.disabled = true;
-        rhythmTest.startButton.disabled = true;
         super.startTest();
+        this.#ensureExactNumberOfNotes(this.tests[0]);
     }
 }
 const melodyTestDefaultLengths = [4, 5, 6, 7, 8, 9];
@@ -763,11 +757,9 @@ class RhythmTest extends AbstractTest {
     }
 
     startTest() {
-        melodyTest.startButton.disabled = true;
-        pitchTest.startButton.disabled = true;
+        super.startTest();
         this.identicalButton.disabled = true;
         this.differentButton.disabled = true;
-        super.startTest();
     }
 
     async playRhythm(rhythm) {
@@ -781,8 +773,6 @@ class RhythmTest extends AbstractTest {
 
     onTestFinish(){
         super.onTestFinish();
-        melodyTest.startButton.disabled = false;
-        pitchTest.startButton.disabled = false;
         this.identicalButton.disabled = true;
         this.differentButton.disabled = true;
     }
@@ -913,8 +903,6 @@ class PitchTest extends AbstractTest {
         super.onTestFinish();
         this.higherButton.disabled = true;
         this.lowerButton.disabled = true;
-        melodyTest.startButton.disabled = false;
-        rhythmTest.startButton.disabled = false;
     }
 
     async runNextTest() {
@@ -945,11 +933,9 @@ class PitchTest extends AbstractTest {
     }
 
     startTest() {
-        melodyTest.startButton.disabled = true;
-        rhythmTest.startButton.disabled = true;
+        super.startTest();
         this.higherButton.disabled = true;
         this.lowerButton.disabled = true;
-        super.startTest();
     }
 
     onKeyPress(e) {
@@ -968,4 +954,6 @@ class PitchTest extends AbstractTest {
 const pitchTest = new PitchTest(pitchTestDefaultDifferences, pitchTestDefaultCounts,
     pitchTestDefaultRampUpMs, pitchTestDefaultRampDownMs, pitchTestDefaultDurationMs, pitchTestDefaultSilenceMs, pitchTestDefaultFrequency);
 
-setup();
+const allTests = [melodyTest, rhythmTest, pitchTest];
+
+
