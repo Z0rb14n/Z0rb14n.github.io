@@ -483,16 +483,20 @@ class MelodyTest extends AbstractTest {
      * @type {number}
      */
     toneDurationMs;
+    toneRampMs;
+    toneFadeMs;
     /**
      * @type {number}
      */
     timeBetweenStimuliMs;
-    constructor(lengths, counts, toneIntervalMs, toneDurationMs, timeBetweenStimuliMs) {
+    constructor(lengths, counts, toneIntervalMs, toneDurationMs, timeBetweenStimuliMs, toneRampMs, toneFadeMs) {
         super(lengths, counts);
         this.toneIntervalMs = toneIntervalMs;
         this.toneDurationMs = toneDurationMs;
         this.toneIntervalMs = toneIntervalMs;
         this.timeBetweenStimuliMs = timeBetweenStimuliMs;
+        this.toneRampMs = toneRampMs;
+        this.toneFadeMs = toneFadeMs;
         this.testVisual = document.querySelector("svg[id='melody-test-visual']");
         this.nowPlayingDisplay = document.querySelector("div[id='melody-test-now-playing']");
         this.startButton = document.querySelector("button[id='melody-test-start']");
@@ -551,7 +555,7 @@ class MelodyTest extends AbstractTest {
         for (let i = 0; i < melody.length; i++) {
             if (this.stopping) return;
             this.#markNotePlayStatus(i, true);
-            await playToneWithRamp(MelodyTest.#semitonesAboveC4Freq[melody[i]], this.toneIntervalMs, 0, 0);
+            await playToneWithRamp(MelodyTest.#semitonesAboveC4Freq[melody[i]], this.toneIntervalMs, this.toneRampMs, this.toneFadeMs);
             this.#markNotePlayStatus(i, false);
 
             if (this.stopping) return;
@@ -574,7 +578,7 @@ class MelodyTest extends AbstractTest {
             return;
         }
         if (index !== diffIndex) {
-            this.onTestFail(`Test ${this.numTests} failed, different note was ${diffIndex}, was marked ${index}`);
+            this.onTestFail(`Test ${this.numTests+1} failed: different note was ${diffIndex+1}, but said ${index+1}`);
         }
         else {
             this.onTestPass();
@@ -638,10 +642,12 @@ const melodyTestDefaultCounts = [3, 3, 3, 3, 3, 3];
 const melodyTestDefaultToneIntervalMs = 650;
 // they don't actually say how long the duration is, we just give them one
 const melodyTestDefaultToneDurationMs = melodyTestDefaultToneIntervalMs;
+const melodyTestDefaultRampMs = 0;
+const melodyTestDefaultFadeMs = 0;
 const melodyTestDefaultTimeBetweenStimuliMs = 1300;
 
 const melodyTest = new MelodyTest(melodyTestDefaultLengths,
-    melodyTestDefaultCounts, melodyTestDefaultToneIntervalMs, melodyTestDefaultToneDurationMs, melodyTestDefaultTimeBetweenStimuliMs);
+    melodyTestDefaultCounts, melodyTestDefaultToneIntervalMs, melodyTestDefaultToneDurationMs, melodyTestDefaultTimeBetweenStimuliMs, melodyTestDefaultRampMs, melodyTestDefaultFadeMs);
 
 class RhythmTest extends AbstractTest {
     static #rhythmModifyAttempts = 10;
@@ -785,8 +791,7 @@ class RhythmTest extends AbstractTest {
         if (!this.awaitingInput) return;
         const hasDifference = !RhythmTest.#areRhythmsEqual(this.originalRhythm, this.modifiedRhythm);
         if (different !== hasDifference) {
-            console.log(this.originalRhythm + "," + this.modifiedRhythm);
-            this.onTestFail(`Test ${this.numTests} failed, sequences were ${hasDifference ? "" : "not"} different, was marked as ${different ? "" : "not"} different`);
+            this.onTestFail(`Test ${this.numTests+1} failed: sequences were ${hasDifference ? "" : "not"} different but selected ${different ? "" : "not"} different`);
         } else {
             this.onTestPass();
         }
@@ -899,7 +904,7 @@ class PitchTest extends AbstractTest {
             const difference = this.tests[this.testIndex];
             const firstPitch = this.basePlayedFirst ? this.toneFreq : this.toneFreq + difference;
             const secondPitch = this.basePlayedFirst ? this.toneFreq + difference : this.toneFreq;
-            this.onTestFail(`Test ${this.numTests} failed, frequencies were ${firstPitch}/${secondPitch}, was marked ${this.basePlayedFirst ? "Lower" : "Higher"}`);
+            this.onTestFail(`Test ${this.numTests+1} failed: frequencies were ${firstPitch}/${secondPitch}, but selected second note ${this.basePlayedFirst ? "Lower" : "Higher"}`);
         }
         this.runNextTest();
     }
