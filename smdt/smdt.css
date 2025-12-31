@@ -19,29 +19,23 @@ body {
     line-height:1.4;
 }
 
+html {
+    background-color: var(--white);
+    color: var(--black);
+}
+
+ellipse {
+    fill: var(--black);
+    cursor: pointer;
+}
+
 ellipse.selected {
     fill: green;
 }
 
-@media (prefers-color-scheme: light) {
-    html {
-        background-color: var(--white);
-        color: var(--black);
-    }
-
-    ellipse {
-        fill: var(--black);
-        cursor: pointer;
-    }
-
-    ellipse.selected {
-        fill: green;
-    }
-
-    circle {
-        fill: var(--white);
-        cursor: pointer;
-    }
+circle {
+    fill: var(--white);
+    cursor: pointer;
 }
 
 @media (prefers-color-scheme: dark) {
