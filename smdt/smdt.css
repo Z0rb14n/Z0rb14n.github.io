@@ -1,20 +1,89 @@
+:root {
+    --white: #d9d9d9;
+    --black: #111;
+}
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    max-width:800px;
+    margin:2em auto;
+    line-height:1.4;
+}
+
+ellipse.selected {
+    fill: green;
+}
+
+@media (prefers-color-scheme: light) {
+    html {
+        background-color: var(--white);
+        color: var(--black);
+    }
+
+    ellipse {
+        fill: var(--black);
+        cursor: pointer;
+    }
+
+    ellipse.selected {
+        fill: green;
+    }
+
+    circle {
+        fill: var(--white);
+        cursor: pointer;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        background-color:#111;
+        color: var(--white);
+    }
+
+    a {
+        color: #00a2e7;
+    }
+
+    ellipse {
+        fill: var(--white);
+        cursor: pointer;
+    }
+
+    ellipse.selected {
+        fill: lightgreen;
+    }
+
+    circle {
+        fill: var(--black);
+        cursor: pointer;
+    }
+}
+
 .settings-bar {
     height: 40px;
-    position: fixed;
-    bottom: 0;
-    width:100%;
+    width: 100%;
     opacity: 1;
     display: flex;
     align-items: center;
 }
 
 .now-playing {
-    min-height: 20px;
+    min-height: 25px;
 }
 
 .scuffed-button {
     border: none;
-    color: white;
+    color: var(--white);
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
@@ -35,19 +104,15 @@
 }
 
 .left-button {
-    background-color: #e7e7e7;
-    color: black;
+    background-color: gray;
+    color: var(--white);
 }
 
 .right-button {
-    background-color: #e7e7e7;
-    color: black;
+    background-color: gray;
+    color: var(--white);
 }
 
 .stop-button {
     background-color: #f44336;
-}
-
-* {
-    font-family: 'Open Sans', sans-serif;
 }

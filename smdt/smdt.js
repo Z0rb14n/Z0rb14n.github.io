@@ -95,6 +95,13 @@ class AbstractTest {
         for (const test of allTests) test.startButton.disabled = false;
     }
 
+    /**
+     * @abstract
+     * @param {KeyboardEvent} e
+     */
+    onKeyPress(e) {
+    }
+
     async runNextTest() {
         if (this.testIndex >= this.tests.length) {
             this.onTestFinish();
@@ -350,14 +357,6 @@ class MelodyTest extends AbstractTest {
         return retVal;
     }
 
-    static #ellipseRadiusX = 20;
-    static #ellipseRadiusY = 10;
-    static #ellipseColor = "black";
-    static #ellipseSpacing = 20;
-    static #ellipsePlayColor = "green";
-    static #circleRadius = 8;
-    static #circleColor = "white";
-
     /**
      * @param {number[]} stimulusOne
      * @param {number[]} stimulusTwo
@@ -523,10 +522,15 @@ class MelodyTest extends AbstractTest {
         }
     }
 
+    static #ellipseRadiusX = 20;
+    static #ellipseRadiusY = 10;
+    static #ellipseSpacing = 20;
+    static #ellipseSelectedClass = "selected";
+    static #circleRadius = 8;
+
     #createNote(index) {
         const ellipse = document.createElementNS("http://www.w3.org/2000/svg","ellipse");
         ellipse.id = `melody-test-ellipse-${index}`;
-        ellipse.style.fill = MelodyTest.#ellipseColor;
         const posX = 3 + MelodyTest.#ellipseRadiusX + (index * (2*MelodyTest.#ellipseRadiusX + MelodyTest.#ellipseSpacing));
         ellipse.setAttribute("rx", MelodyTest.#ellipseRadiusX.toString());
         ellipse.setAttribute("ry", MelodyTest.#ellipseRadiusY.toString());
@@ -537,7 +541,6 @@ class MelodyTest extends AbstractTest {
         const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
         circle.id = `melody-test-circle-${index}`;
         circle.setAttribute("r", MelodyTest.#circleRadius.toString());
-        circle.style.fill = MelodyTest.#circleColor;
         circle.setAttribute("cy", "20");
         circle.setAttribute("cx", posX.toString());
         circle.onclick = () => this.onUserInput(index);
@@ -550,7 +553,7 @@ class MelodyTest extends AbstractTest {
             console.warn("bruv");
             return;
         }
-        ellipse.style.fill = status ? MelodyTest.#ellipsePlayColor : MelodyTest.#ellipseColor;
+        ellipse.setAttribute("class", status ? MelodyTest.#ellipseSelectedClass : "");
     }
 
     async playMelody(melody) {
@@ -566,7 +569,7 @@ class MelodyTest extends AbstractTest {
     }
 
     onUserInput(index) {
-        if (!this.awaitingInput) return;
+        if (!this.awaitingInput || this.stopping) return;
         let diffIndex = -1;
         for (let i = 0; i < this.originalMelody.length; i++) {
             if (this.originalMelody[i] !== this.modifiedMelody[i]) {
@@ -615,7 +618,7 @@ class MelodyTest extends AbstractTest {
     }
 
     onKeyPress(e) {
-        if (!this.awaitingInput) return false;
+        if (!this.awaitingInput || this.stopping) return false;
         const numKeys = this.originalMelody.length;
         for (let i = 1; i <= numKeys; i++) {
             if (e.key === `${i}`) {
@@ -778,7 +781,7 @@ class RhythmTest extends AbstractTest {
     }
 
     onUserInput(different) {
-        if (!this.awaitingInput) return;
+        if (!this.awaitingInput || this.stopping) return;
         const hasDifference = !RhythmTest.#areRhythmsEqual(this.originalRhythm, this.modifiedRhythm);
         if (different !== hasDifference) {
             this.onTestFail(`Test ${this.numTests+1} failed: sequences were ${hasDifference ? "" : "not"} different but selected ${different ? "" : "not"} different`);
@@ -815,7 +818,7 @@ class RhythmTest extends AbstractTest {
     }
 
     onKeyPress(e) {
-        if (!this.awaitingInput) return;
+        if (!this.awaitingInput || this.stopping) return;
         if (e.key === 'd') {
             this.onUserInput(true);
             return true;
@@ -886,7 +889,7 @@ class PitchTest extends AbstractTest {
     }
 
     onUserInput(higher) {
-        if (!this.awaitingInput) return;
+        if (!this.awaitingInput || this.stopping) return;
 
         if (higher === this.basePlayedFirst) {
             this.onTestPass();
@@ -939,7 +942,7 @@ class PitchTest extends AbstractTest {
     }
 
     onKeyPress(e) {
-        if (!this.awaitingInput) return false;
+        if (!this.awaitingInput || this.stopping) return false;
         if (e.key === 'h') {
             this.onUserInput(true);
             return true;

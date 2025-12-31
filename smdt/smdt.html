@@ -1,14 +1,64 @@
 <!DOCTYPE html>
 <head>
-    <title>Bad JS in website</title>
+    <title>Swedish Musical Discrimination Test</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://z0rb14n.github.io/smdt/smdt.html">
+    <meta property="og:title" content="Swedish Musical Discrimination Test">
+    <meta property="og:description"
+          content="Implementation of the 3 'music ability' tests from the Swedish Musical Discrimination Test.">
+    <meta property="og:image" content="https://z0rb14n.github.io/images/cat.png">
     <link rel="shortcut icon" href="../images/cat.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./smdt.css">
 </head>
 <body>
+<h1>An Implementation of the Swedish Musical Discrimination Test</h1>
+<p>
+    This site contains an implementation of the Swedish Musical Discrimination Test.
+</p>
+<p>
+    It's a test that was intended to assess the user's ability to differentiate between audio samples,
+    but was also used as a proxy for <a href="https://pubmed.ncbi.nlm.nih.gov/25079217/">music ability in a followup
+    study</a>.
+</p>
+<p>
+    You can find more information about the test <a
+        href="https://www.sciencedirect.com/science/article/pii/S0191886914000841">here</a>.
+</p>
+<p>
+    The test was made up of three different subtests:
+</p>
+<ol>
+    <li>A melody test, which tests whether the participant can identify the specific note changed between two melodies</li>
+    <li>A rhythm test, which tests whether the participant can tell if two rhythms are different</li>
+    <li>A pitch test, which tests whether the user can differentiate between two similar pitches</li>
+</ol>
+<div class="settings-bar">
+    <span>Volume: </span>
+    <input
+            type="range"
+            min="0.0"
+            max="1.0"
+            step="0.01"
+            value="0.5"
+            list="volumes"
+            name="volume"/>
+    <datalist id="volumes">
+        <option value="0.0" label="Mute"></option>
+        <option value="1.0" label="100%"></option>
+    </datalist>
+</div>
 <div id="melody-test">
-    <h1>Melody Test</h1>
+    <h2>Melody Test</h2>
+    <p>
+        In this test we play one melody, and play the melody again with 1 note changed.
+        This test involves identifying the note changed by clicking the note that changed.
+        (Alternatively, press 1-9 on the keyboard corresponding to the note.)
+    </p>
+    <p>
+        (And yes, this is effectively a memory test.)
+    </p>
     <div id="melody-test-now-playing" class="now-playing"></div>
-    <svg id="melody-test-visual" height="40" width="700" xmlns="http://www.w3.org/2000/svg">
+    <svg id="melody-test-visual" height="40" width="700" xmlns="http://www.w3.org/2000/svg" class="noselect">
     </svg>
     <br/>
     <button onclick="melodyTest.startTest()" id="melody-test-start" class="scuffed-button start-button">Start</button>
@@ -25,7 +75,12 @@
     </div>
 </div>
 <div id="rhythm-test">
-    <h1>Rhythm Test</h1>
+    <h2>Rhythm Test</h2>
+    <p>
+        In this test, we play a short rhythm, and then play the rhythm again possibly with a modification to it.
+        This test involves identifying whether we played an identical rhythm or a different one.
+        Click the corresponding button (alternatively, press 'i' for identical/'d' for different).
+    </p>
     <div id="rhythm-test-now-playing" class="now-playing"></div>
     <button onclick="rhythmTest.startTest()" id="rhythm-test-start" class="scuffed-button start-button">Start</button>
     <button onclick="rhythmTest.onUserInput(false)" id="rhythm-test-identical" class="scuffed-button left-button">
@@ -47,7 +102,13 @@
     </div>
 </div>
 <div id="pitch-test">
-    <h1>Pitch Test</h1>
+    <h2>Pitch Test</h2>
+    <p>
+        In this test, we play two tones one after the other.
+        The second tone will always be different, but may be higher or lower than the first tone.
+        This test involves identifying whether the second tone is higher or lower.
+        Click the corresponding button (alternatively, press 'h' for higher and 'l' for lower).
+    </p>
     <div id="pitch-test-now-playing" class="now-playing"></div>
     <button onclick="pitchTest.startTest()" id="pitch-test-start" class="scuffed-button start-button">Start</button>
     <button onclick="pitchTest.onUserInput(true)" id="pitch-test-higher" class="scuffed-button left-button">Second Pitch
@@ -67,21 +128,6 @@
 
         </ol>
     </div>
-</div>
-<div class="settings-bar">
-    <span>Volume: </span>
-    <input
-            type="range"
-            min="0.0"
-            max="1.0"
-            step="0.01"
-            value="0.5"
-            list="volumes"
-            name="volume"/>
-    <datalist id="volumes">
-        <option value="0.0" label="Mute"></option>
-        <option value="1.0" label="100%"></option>
-    </datalist>
 </div>
 <script src="smdt.js"></script>
 <script src="testing.js"></script>
